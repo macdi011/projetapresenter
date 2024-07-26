@@ -11,13 +11,12 @@ CLIENT_SECRET = "4d6710460d764fbbb8d8753dc094d131"
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-music = pd.read_csv('Spotify.csv')
-
-
+# Chargement des données à partir du fichier CSV
+music = pd.read_csv('Spotify.csv')  # Assurez-vous que le chemin est correct
 
 # Fonction pour récupérer les images d'albums depuis Spotify
-def get_song_album_cover_url(song_name, artist_name):
-    search_query = f"track:{song_name} artist:{artist_name}"
+def get_song_album_cover_url(track_name, artist_name):
+    search_query = f"track:{track_name} artist:{artist_name}"
     results = sp.search(q=search_query, type="track")
 
     if results and results["tracks"]["items"]:
@@ -30,14 +29,14 @@ def get_song_album_cover_url(song_name, artist_name):
 # Fonction de recommandation basée sur le clustering
 def recommend(song):
     try:
-        index = music[music['song'] == song].index[0]
+        index = music[music['track_name'] == song].index[0]
         distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
         recommended_music_names = []
         recommended_music_posters = []
         for i in distances[1:6]:
-            artist = music.iloc[i[0]].artist
-            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i[0]].song, artist))
-            recommended_music_names.append(music.iloc[i[0]].song)
+            artist = music.iloc[i[0]].artist_name
+            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i[0]].track_name, artist))
+            recommended_music_names.append(music.iloc[i[0]].track_name)
 
         return recommended_music_names, recommended_music_posters
     except IndexError:
