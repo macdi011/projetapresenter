@@ -30,17 +30,17 @@ def get_song_album_cover_url(track_name, artists_name):
         return "https://i.postimg.cc/0QNxYz4V/social.png"  # Image par défaut si aucune n'est trouvée
 
 # Fonction de recommandation basée sur le clustering
-def recommend(song, music):
+def recommend(song, music_data):
     try:
-        index = music[music['track_name'] == song].index[0]
+        index = music_data[music_data['track_name'] == song].index[0]
         recommended_music_titles = []
         recommended_music_posters = []
         
         # Logique de recommandation
-        for i in range(index + 1, min(index + 6, len(music))):  
-            artists = music.iloc[i]['artist(s)_name']  # Nom des artistes
-            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i]['track_name'], artists))
-            recommended_music_titles.append(music.iloc[i]['track_name'])
+        for i in range(index + 1, min(index + 6, len(music_data))):  
+            artists = music_data.iloc[i]['artist(s)_name']  # Nom des artistes
+            recommended_music_posters.append(get_song_album_cover_url(music_data.iloc[i]['track_name'], artists))
+            recommended_music_titles.append(music_data.iloc[i]['track_name'])
 
         return recommended_music_titles, recommended_music_posters
     except IndexError:
