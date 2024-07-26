@@ -30,7 +30,7 @@ def get_song_album_cover_url(track_name, artist_name):
         return "https://i.postimg.cc/0QNxYz4V/social.png"  # Image par défaut si aucune n'est trouvée
 
 # Fonction de recommandation basée sur le clustering
-def recommend(song):
+def recommend(song, music):
     try:
         index = music[music['track_name'] == song].index[0]
         recommended_music_names = []
@@ -97,7 +97,7 @@ def main():
 
         if st.button('Rechercher'):
             if song_name:
-                recommended_songs, recommended_posters = recommend(song_name)
+                recommended_songs, recommended_posters = recommend(song_name, music)
                 if recommended_songs and recommended_posters:
                     st.subheader('Chansons Recommandées:')
                     
