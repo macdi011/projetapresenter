@@ -46,6 +46,8 @@ def recommend(song, music):
         return recommended_music_names, recommended_music_posters
     except IndexError:
         st.error(f"Aucune chanson trouvée avec le nom '{song}'. Veuillez essayer avec un autre nom de chanson.")
+    except KeyError:
+        st.error(f"Erreur de clé lors de la recherche de '{song}' dans les données musicales.")
 
 # Fonction principale pour l'application Streamlit
 def main():
