@@ -14,7 +14,7 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 # Chargement des données à partir du fichier CSV
 music = pd.read_csv('Spotify.csv')  # Assurez-vous que le chemin est correct
 
-# Fonction pour récupérer les images d'albums et l'URL de la piste depuis Spotify
+# Fonction pour récupérer les images d'albums, l'URL de la piste audio et l'URL Spotify depuis Spotify
 def get_track_info(track_name, artist_name):
     search_query = f"track:{track_name} artist:{artist_name}"
     results = sp.search(q=search_query, type="track")
@@ -23,9 +23,10 @@ def get_track_info(track_name, artist_name):
         track = results["tracks"]["items"][0]
         album_cover_url = track["album"]["images"][0]["url"]
         track_url = track["external_urls"]["spotify"]
-        return album_cover_url, track_url
+        audio_preview_url = track["preview_url"]  # URL du prévisualisation audio au format mp3
+        return album_cover_url, track_url, audio_preview_url
     else:
-        return "https://i.postimg.cc/0QNxYz4V/social.png", None  # Image par défaut si aucune n'est trouvée
+        return "https://i.postimg.cc/0QNxYz4V/social.png", None, None  # Image par défaut si aucune n'est trouvée
 
 # Fonction de recommandation basée sur le clustering
 def recommend(song):
@@ -37,10 +38,10 @@ def recommend(song):
 
         for i in range(index + 1, min(index + 6, len(music))):  # Remplacer la boucle avec votre propre logique de recommandation
             artist = music.iloc[i].artist_name
-            album_cover_url, track_url = get_track_info(music.iloc[i].track_name, artist)
+            album_cover_url, track_url, audio_preview_url = get_track_info(music.iloc[i].track_name, artist)
             recommended_music_posters.append(album_cover_url)
             recommended_music_names.append(music.iloc[i].track_name)
-            recommended_music_urls.append(track_url)
+            recommended_music_urls.append(audio_preview_url)
 
         return recommended_music_names, recommended_music_posters, recommended_music_urls
     except IndexError:
@@ -105,7 +106,7 @@ def main():
                         st.markdown('<hr>', unsafe_allow_html=True)
                         st.markdown(f'<div class="recommended-song"><p class="song-name">{i+1}. {song}</p><img src="{recommended_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
                         if recommended_urls[i]:
-                            st.audio(recommended_urls[i], format='audio/ogg', start_time=0)
+                            st.audio(recommended_urls[i], format='audio/mpeg', start_time=0)
 
     elif choice == 'À propos':
         st.header('À propos de cette application')
