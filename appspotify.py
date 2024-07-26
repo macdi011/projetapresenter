@@ -14,17 +14,18 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 # Chargement des données à partir du fichier CSV
 music = pd.read_csv('Spotify.csv')  # Assurez-vous que le chemin est correct
 
-# Fonction pour récupérer les images d'albums depuis Spotify
-def get_song_album_cover_url(track_name, artist_name):
+# Fonction pour récupérer les images d'albums et l'URL de la piste depuis Spotify
+def get_track_info(track_name, artist_name):
     search_query = f"track:{track_name} artist:{artist_name}"
     results = sp.search(q=search_query, type="track")
 
     if results and results["tracks"]["items"]:
         track = results["tracks"]["items"][0]
         album_cover_url = track["album"]["images"][0]["url"]
-        return album_cover_url
+        track_url = track["external_urls"]["spotify"]
+        return album_cover_url, track_url
     else:
-        return "https://i.postimg.cc/0QNxYz4V/social.png"  # Image par défaut si aucune n'est trouvée
+        return "https://i.postimg.cc/0QNxYz4V/social.png", None  # Image par défaut si aucune n'est trouvée
 
 # Fonction de recommandation basée sur le clustering
 def recommend(song):
@@ -32,15 +33,16 @@ def recommend(song):
         index = music[music['track_name'] == song].index[0]
         recommended_music_names = []
         recommended_music_posters = []
-        
-        # Ici, vous pouvez effectuer votre logique de recommandation sans utiliser similarity
-        
+        recommended_music_urls = []
+
         for i in range(index + 1, min(index + 6, len(music))):  # Remplacer la boucle avec votre propre logique de recommandation
             artist = music.iloc[i].artist_name
-            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i].track_name, artist))
+            album_cover_url, track_url = get_track_info(music.iloc[i].track_name, artist)
+            recommended_music_posters.append(album_cover_url)
             recommended_music_names.append(music.iloc[i].track_name)
+            recommended_music_urls.append(track_url)
 
-        return recommended_music_names, recommended_music_posters
+        return recommended_music_names, recommended_music_posters, recommended_music_urls
     except IndexError:
         st.error(f"Aucune chanson trouvée avec le nom '{song}'. Veuillez essayer avec un autre nom de chanson.")
 
@@ -94,18 +96,20 @@ def main():
 
         if st.button('Rechercher'):
             if song_name:
-                recommended_songs, recommended_posters = recommend(song_name)
-                if recommended_songs and recommended_posters:
+                recommended_songs, recommended_posters, recommended_urls = recommend(song_name)
+                if recommended_songs and recommended_posters and recommended_urls:
                     st.subheader('Chansons Recommandées:')
-                    
-                    # Affichage des chansons recommandées avec leurs images d'album
+
+                    # Affichage des chansons recommandées avec leurs images d'album et lecteur audio
                     for i, song in enumerate(recommended_songs):
                         st.markdown('<hr>', unsafe_allow_html=True)
                         st.markdown(f'<div class="recommended-song"><p class="song-name">{i+1}. {song}</p><img src="{recommended_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
+                        if recommended_urls[i]:
+                            st.audio(recommended_urls[i], format='audio/ogg', start_time=0)
 
     elif choice == 'À propos':
         st.header('À propos de cette application')
-        st.write('Cette application utilise Streamlit pour créer une interface de recommandation musicale basée sur le clustering. Elle se connecte à Spotify pour récupérer les images des albums.')
+        st.write('Cette application utilise Streamlit pour créer une interface de recommandation musicale basée sur le clustering. Elle se connecte à Spotify pour récupérer les images des albums et permet à l\'utilisateur d\'écouter des extraits de chansons.')
 
 if __name__ == '__main__':
     main()
