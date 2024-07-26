@@ -18,8 +18,8 @@ except UnicodeDecodeError:
     st.error("Erreur de décodage Unicode lors de la lecture du fichier CSV.")
 
 # Fonction pour récupérer les images d'albums depuis Spotify
-def get_song_album_cover_url(track_name, artist_name):
-    search_query = f"track:{track_name} artist:{artist_name}"
+def get_song_album_cover_url(track_name, artists_name):
+    search_query = f"track:{track_name} artist:{artists_name}"
     results = sp.search(q=search_query, type="track")
 
     if results and results["tracks"]["items"]:
@@ -33,19 +33,18 @@ def get_song_album_cover_url(track_name, artist_name):
 def recommend(song, music):
     try:
         index = music[music['track_name'] == song].index[0]
-        recommended_music_names = []
+        recommended_music_titles = []
         recommended_music_posters = []
         
-        # Ici, vous pouvez effectuer votre logique de recommandation
-        
+        # Logique de recommandation
         for i in range(index + 1, min(index + 6, len(music))):  
-            artist = music.iloc[i].artist_name
-            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i].track_name, artist))
-            recommended_music_names.append(music.iloc[i].track_name)
+            artists = music.iloc[i]['artists_name']
+            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i]['track_name'], artists))
+            recommended_music_titles.append(music.iloc[i]['track_name'])
 
-        return recommended_music_names, recommended_music_posters
+        return recommended_music_titles, recommended_music_posters
     except IndexError:
-        st.error(f"Aucune chanson trouvée avec le nom '{song}'. Veuillez essayer avec un autre nom de chanson.")
+        st.error(f"Aucune chanson trouvée avec le titre '{song}'. Veuillez essayer avec un autre titre de chanson.")
     except KeyError:
         st.error(f"Erreur de clé lors de la recherche de '{song}' dans les données musicales.")
 
@@ -71,7 +70,7 @@ def main():
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .song-name {
+        .song-title {
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
@@ -93,9 +92,9 @@ def main():
         st.markdown('<hr>', unsafe_allow_html=True)
         st.header('Accueil')
 
-        # Formulaire pour saisir une chanson
+        # Formulaire pour saisir un titre de chanson
         st.subheader('Recherche de chanson')
-        song_name = st.text_input('Nom de la chanson')
+        song_name = st.text_input('Titre de la chanson')
 
         if st.button('Rechercher'):
             if song_name:
@@ -104,9 +103,9 @@ def main():
                     st.subheader('Chansons Recommandées:')
                     
                     # Affichage des chansons recommandées avec leurs images d'album
-                    for i, song in enumerate(recommended_songs):
+                    for i, title in enumerate(recommended_songs):
                         st.markdown('<hr>', unsafe_allow_html=True)
-                        st.markdown(f'<div class="recommended-song"><p class="song-name">{i+1}. {song}</p><img src="{recommended_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="recommended-song"><p class="song-title">{i+1}. {title}</p><img src="{recommended_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
 
     elif choice == 'À propos':
         st.header('À propos de cette application')
