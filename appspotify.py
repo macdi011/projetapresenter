@@ -12,7 +12,7 @@ client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, clien
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
-music = pd.read_csv('/content/Spotify.csv')
+music = pd.read_csv('Spotify.csv')
 
 
 # Fonction pour récupérer les images d'albums depuis Spotify
