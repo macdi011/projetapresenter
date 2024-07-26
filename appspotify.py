@@ -40,8 +40,10 @@ def get_current_top_tracks(limit=5, time_range='short_term'):
             current_music_posters.append(get_song_album_cover_url(track_name, artist_name))
 
         return current_music_names, current_music_posters
+    except spotipy.SpotifyException as e:
+        st.error(f"Erreur Spotify : {str(e)}")
     except Exception as e:
-        st.error(f"Erreur lors de la récupération des pistes actuelles : {str(e)}")
+        st.error(f"Erreur inattendue : {str(e)}")
 
 # Fonction principale pour l'application Streamlit
 def main():
