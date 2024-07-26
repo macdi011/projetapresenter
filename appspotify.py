@@ -1,18 +1,18 @@
 import streamlit as st
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 
-# Clés d'API Spotify (remplacez-les par vos propres clés ou utilisez SpotifyOAuth pour une authentification utilisateur)
+# Clés d'API Spotify (remplacez-les par vos propres clés)
 CLIENT_ID = "70a9fb89662f4dac8d07321b259eaad7"
 CLIENT_SECRET = "4d6710460d764fbbb8d8753dc094d131"
-REDIRECT_URI = "http://localhost:8888/callback"  # Lien de redirection après authentification
 
-# Initialisation de l'authentification Spotify OAuth
-sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope='user-top-read')
+# Initialisation du client Spotify
+client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# Création de l'objet Spotify
-sp = spotipy.Spotify(auth_manager=sp_oauth)
+# Chargement des données à partir du fichier CSV
+music = pd.read_csv('Spotify.csv')  # Assurez-vous que le chemin est correct
 
 # Fonction pour récupérer les images d'albums depuis Spotify
 def get_song_album_cover_url(track_name, artist_name):
@@ -26,24 +26,23 @@ def get_song_album_cover_url(track_name, artist_name):
     else:
         return "https://i.postimg.cc/0QNxYz4V/social.png"  # Image par défaut si aucune n'est trouvée
 
-# Fonction de récupération des pistes actuelles de l'utilisateur sur Spotify
-def get_current_top_tracks(limit=5, time_range='short_term'):
+# Fonction de recommandation basée sur le clustering
+def recommend(song):
     try:
-        top_tracks = sp.current_user_top_tracks(limit=limit, time_range=time_range)
-        current_music_names = []
-        current_music_posters = []
+        index = music[music['track_name'] == song].index[0]
+        recommended_music_names = []
+        recommended_music_posters = []
+        
+        # Ici, vous pouvez effectuer votre logique de recommandation sans utiliser similarity
+        
+        for i in range(index + 1, min(index + 6, len(music))):  # Remplacer la boucle avec votre propre logique de recommandation
+            artist = music.iloc[i].artist_name
+            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i].track_name, artist))
+            recommended_music_names.append(music.iloc[i].track_name)
 
-        for track in top_tracks['items']:
-            track_name = track['name']
-            artist_name = track['artists'][0]['name']
-            current_music_names.append(track_name)
-            current_music_posters.append(get_song_album_cover_url(track_name, artist_name))
-
-        return current_music_names, current_music_posters
-    except spotipy.SpotifyException as e:
-        st.error(f"Erreur Spotify : {str(e)}")
-    except Exception as e:
-        st.error(f"Erreur inattendue : {str(e)}")
+        return recommended_music_names, recommended_music_posters
+    except IndexError:
+        st.error(f"Aucune chanson trouvée avec le nom '{song}'. Veuillez essayer avec un autre nom de chanson.")
 
 # Fonction principale pour l'application Streamlit
 def main():
@@ -89,21 +88,24 @@ def main():
         st.markdown('<hr>', unsafe_allow_html=True)
         st.header('Accueil')
 
-        st.subheader('Vos pistes actuelles sur Spotify')
-        limit = st.slider('Nombre de pistes à afficher', min_value=1, max_value=10, value=5)
-        time_range = st.selectbox('Période', ['short_term', 'medium_term', 'long_term'], index=0)
+        # Formulaire pour saisir une chanson
+        st.subheader('Recherche de chanson')
+        song_name = st.text_input('Nom de la chanson')
 
-        if st.button('Afficher'):
-            current_songs, current_posters = get_current_top_tracks(limit=limit, time_range=time_range)
-            if current_songs and current_posters:
-                st.subheader('Vos pistes actuelles:')
-                for i, song in enumerate(current_songs):
-                    st.markdown('<hr>', unsafe_allow_html=True)
-                    st.markdown(f'<div class="recommended-song"><p class="song-name">{i+1}. {song}</p><img src="{current_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
+        if st.button('Rechercher'):
+            if song_name:
+                recommended_songs, recommended_posters = recommend(song_name)
+                if recommended_songs and recommended_posters:
+                    st.subheader('Chansons Recommandées:')
+                    
+                    # Affichage des chansons recommandées avec leurs images d'album
+                    for i, song in enumerate(recommended_songs):
+                        st.markdown('<hr>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="recommended-song"><p class="song-name">{i+1}. {song}</p><img src="{recommended_posters[i]}" class="song-image"></div>', unsafe_allow_html=True)
 
     elif choice == 'À propos':
         st.header('À propos de cette application')
-        st.write('Cette application utilise Streamlit pour créer une interface de recommandation musicale basée sur les pistes actuelles de l\'utilisateur sur Spotify.')
+        st.write('Cette application utilise Streamlit pour créer une interface de recommandation musicale basée sur le clustering. Elle se connecte à Spotify pour récupérer les images des albums.')
 
 if __name__ == '__main__':
     main()
