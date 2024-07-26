@@ -11,8 +11,11 @@ CLIENT_SECRET = "4d6710460d764fbbb8d8753dc094d131"
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-# Chargement des données à partir du fichier CSV
-music = pd.read_csv('spotify-2023.csv')  # Assurez-vous que le chemin est correct
+# Chargement des données à partir du fichier CSV avec spécification de l'encodage
+try:
+    music = pd.read_csv('spotify-2023.csv', encoding='utf-8')  # Assurez-vous que le chemin est correct et spécifiez l'encodage approprié
+except UnicodeDecodeError:
+    st.error("Erreur de décodage Unicode lors de la lecture du fichier CSV.")
 
 # Fonction pour récupérer les images d'albums depuis Spotify
 def get_song_album_cover_url(track_name, artist_name):
@@ -33,9 +36,9 @@ def recommend(song):
         recommended_music_names = []
         recommended_music_posters = []
         
-        # Ici, vous pouvez effectuer votre logique de recommandation sans utiliser similarity
+        # Ici, vous pouvez effectuer votre logique de recommandation
         
-        for i in range(index + 1, min(index + 6, len(music))):  # Remplacer la boucle avec votre propre logique de recommandation
+        for i in range(index + 1, min(index + 6, len(music))):  
             artist = music.iloc[i].artist_name
             recommended_music_posters.append(get_song_album_cover_url(music.iloc[i].track_name, artist))
             recommended_music_names.append(music.iloc[i].track_name)
