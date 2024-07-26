@@ -38,7 +38,7 @@ def recommend(song, music):
         
         # Logique de recommandation
         for i in range(index + 1, min(index + 6, len(music))):  
-            artists = music.iloc[i]['artists_name']
+            artists = music.iloc[i]['artist(s)_name']  # Nom des artistes
             recommended_music_posters.append(get_song_album_cover_url(music.iloc[i]['track_name'], artists))
             recommended_music_titles.append(music.iloc[i]['track_name'])
 
