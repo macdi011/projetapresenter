@@ -11,7 +11,7 @@ CLIENT_SECRET = "4d6710460d764fbbb8d8753dc094d131"
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-music = pd.read_csv(Spotify.csv)
+music = pd.read_csv('Spotify.csv')
 
 
 
