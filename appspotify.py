@@ -30,13 +30,15 @@ def get_song_album_cover_url(track_name, artist_name):
 def recommend(song):
     try:
         index = music[music['track_name'] == song].index[0]
-        distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
         recommended_music_names = []
         recommended_music_posters = []
-        for i in distances[1:6]:
-            artist = music.iloc[i[0]].artist_name
-            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i[0]].track_name, artist))
-            recommended_music_names.append(music.iloc[i[0]].track_name)
+        
+        # Ici, vous pouvez effectuer votre logique de recommandation sans utiliser similarity
+        
+        for i in range(index + 1, min(index + 6, len(music))):  # Remplacer la boucle avec votre propre logique de recommandation
+            artist = music.iloc[i].artist_name
+            recommended_music_posters.append(get_song_album_cover_url(music.iloc[i].track_name, artist))
+            recommended_music_names.append(music.iloc[i].track_name)
 
         return recommended_music_names, recommended_music_posters
     except IndexError:
