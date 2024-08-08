@@ -2,6 +2,9 @@ import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+import matplotlib.pyplot as plt
+import altair as alt
+from io import BytesIO
 
 # Clés d'API Spotify (remplacez-les par vos propres clés)
 CLIENT_ID = "70a9fb89662f4dac8d07321b259eaad7"
@@ -61,17 +64,34 @@ def show_statistics_and_eda():
     st.subheader('Statistiques Descriptives')
     st.write(music.describe())
 
-    # Nombre de colonnes
-    st.subheader('Nombre de Colonnes')
-    st.write(f"Le dataset contient {len(music.columns)} colonnes.")
+    # Affichage des premières lignes du DataFrame
+    st.subheader('Premières Lignes du Dataset')
+    st.write(music.head())
+
+    # Informations sur le DataFrame
+    st.subheader('Informations sur le Dataset')
+    buffer = BytesIO()
+    music.info(buf=buffer)
+    info_str = buffer.getvalue().decode()
+    st.text(info_str)
 
     # Répartition des types d'albums
     st.subheader('Répartition des Types d\'Albums')
-    if 'Album_Type' in music.columns:
-        album_types = music['Album_Type'].value_counts()
-        st.bar_chart(album_types)
+    if 'Album_type' in music.columns:
+        album_type_count = music['Album_type'].value_counts()
+        labels = album_type_count.index.tolist()
+        sizes = album_type_count.values.tolist()
+
+        # Création du graphique avec matplotlib
+        fig, ax = plt.subplots()
+        ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=180)
+        ax.set_title('Types d\'Albums')
+        plt.legend(labels, loc='best')
+
+        # Affichage du graphique dans Streamlit
+        st.pyplot(fig)
     else:
-        st.write("Colonne 'Album_Type' non trouvée dans le dataset.")
+        st.write("Colonne 'Album_type' non trouvée dans le dataset.")
 
     # Artistes les plus présents
     st.subheader('Artistes les Plus Présents')
