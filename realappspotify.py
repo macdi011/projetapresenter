@@ -68,8 +68,11 @@ def show_statistics_and_eda():
 
     # Répartition des types d'albums
     st.subheader('Répartition des Types d\'Albums')
-    album_types = music['Album_Type'].value_counts()
-    st.bar_chart(album_types)
+    if 'Album_Type' in music.columns:
+        album_types = music['Album_Type'].value_counts()
+        st.bar_chart(album_types)
+    else:
+        st.write("Colonne 'Album_Type' non trouvée dans le dataset.")
 
     # Artistes les plus présents
     st.subheader('Artistes les Plus Présents')
@@ -78,16 +81,20 @@ def show_statistics_and_eda():
 
     # Chansons les plus streamées
     st.subheader('Chansons les Plus Streamées')
-    top_songs = music[['Track', 'Streams']].sort_values(by='Streams', ascending=False).head(10)
-    st.write(top_songs)
+    if 'Streams' in music.columns:
+        top_songs = music[['Track', 'Streams']].sort_values(by='Streams', ascending=False).head(10)
+        st.write(top_songs)
+    else:
+        st.write("Colonne 'Streams' non trouvée dans le dataset.")
 
     # Visualisation avec matplotlib
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
     
     # Types d'albums
-    album_types.plot(kind='bar', ax=ax[0], color='skyblue')
-    ax[0].set_title('Répartition des Types d\'Albums')
-    ax[0].set_ylabel('Nombre de Titres')
+    if 'Album_Type' in music.columns:
+        album_types.plot(kind='bar', ax=ax[0], color='skyblue')
+        ax[0].set_title('Répartition des Types d\'Albums')
+        ax[0].set_ylabel('Nombre de Titres')
 
     # Artistes les plus présents
     top_artists.plot(kind='bar', ax=ax[1], color='lightgreen')
