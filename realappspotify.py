@@ -2,6 +2,7 @@ import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Clés d'API Spotify (remplacez-les par vos propres clés)
 CLIENT_ID = "70a9fb89662f4dac8d07321b259eaad7"
@@ -53,9 +54,51 @@ def recommend(song):
     except IndexError:
         st.error(f"Aucune chanson trouvée avec le nom '{song}'. Veuillez essayer avec un autre nom de chanson.")
 
+# Fonction pour afficher les statistiques et l'EDA
+def show_statistics_and_eda():
+    st.header('Statistiques et Analyse Exploratoire des Données (EDA)')
+    
+    # Affichage des statistiques descriptives
+    st.subheader('Statistiques Descriptives')
+    st.write(music.describe())
+
+    # Nombre de colonnes
+    st.subheader('Nombre de Colonnes')
+    st.write(f"Le dataset contient {len(music.columns)} colonnes.")
+
+    # Répartition des types d'albums
+    st.subheader('Répartition des Types d\'Albums')
+    album_types = music['Album_Type'].value_counts()
+    st.bar_chart(album_types)
+
+    # Artistes les plus présents
+    st.subheader('Artistes les Plus Présents')
+    top_artists = music['Artist'].value_counts().head(10)
+    st.bar_chart(top_artists)
+
+    # Chansons les plus streamées
+    st.subheader('Chansons les Plus Streamées')
+    top_songs = music[['Track', 'Streams']].sort_values(by='Streams', ascending=False).head(10)
+    st.write(top_songs)
+
+    # Visualisation avec matplotlib
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+    
+    # Types d'albums
+    album_types.plot(kind='bar', ax=ax[0], color='skyblue')
+    ax[0].set_title('Répartition des Types d\'Albums')
+    ax[0].set_ylabel('Nombre de Titres')
+
+    # Artistes les plus présents
+    top_artists.plot(kind='bar', ax=ax[1], color='lightgreen')
+    ax[1].set_title('Artistes les Plus Présents')
+    ax[1].set_ylabel('Nombre de Titres')
+
+    st.pyplot(fig)
+
 # Fonction principale pour l'application Streamlit
 def main():
-    st.title('Application de Recommandation Musicale')
+    st.title('Cellou Spotube Recommendations')
     st.markdown(
         """
         <style>
@@ -90,7 +133,7 @@ def main():
     )
 
     # Menu de navigation
-    menu = ['Accueil', 'À propos']
+    menu = ['Accueil', 'Statistiques', 'À propos']
     choice = st.sidebar.selectbox('Menu', menu)
 
     if choice == 'Accueil':
@@ -118,10 +161,16 @@ def main():
                         if recommended_youtube[i]:
                             st.write(f"Lien YouTube: {recommended_youtube[i]}")
 
+    elif choice == 'Statistiques':
+        show_statistics_and_eda()
+
     elif choice == 'À propos':
         st.header('À propos de cette application')
-        st.write('Cette application utilise Streamlit pour créer une interface de recommandation musicale basée sur le clustering. Elle se connecte à Spotify pour récupérer les images des albums et permet à l\'utilisateur d\'écouter des extraits de chansons.')
+        st.write(
+            """
+            Cette application de recommandation musicale Spotify, appelée **Cellou Spotube Recommendations**, fournit des liens YouTube pour les pistes recommandées. Elle a été développée dans le cadre d'un travail de laboratoire du bootcamp en Data Science de **GOMYCODE**. Elle utilise les données de Spotify pour proposer des recommandations musicales et offre des fonctionnalités telles que l'affichage des images d'album et des extraits audio.
+            """
+        )
 
 if __name__ == '__main__':
     main()
-
