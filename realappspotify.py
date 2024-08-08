@@ -2,12 +2,7 @@ import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
-
-# Essayons d'importer matplotlib en dernier pour diagnostiquer les erreurs d'importation
-try:
-    import matplotlib.pyplot as plt
-except ImportError as e:
-    st.error(f"Erreur lors de l'importation de matplotlib: {e}")
+import matplotlib.pyplot as plt
 
 # Clés d'API Spotify (remplacez-les par vos propres clés)
 CLIENT_ID = "70a9fb89662f4dac8d07321b259eaad7"
@@ -29,7 +24,7 @@ def get_track_info(track_name, artist_name):
         track = results["tracks"]["items"][0]
         album_cover_url = track["album"]["images"][0]["url"]
         track_url = track["external_urls"]["spotify"]
-        audio_preview_url = track["preview_url"]  # URL du prévisualisation audio au format mp3
+        audio_preview_url = track["preview_url"]  # URL de prévisualisation audio au format mp3
         return album_cover_url, track_url, audio_preview_url
     else:
         return "https://i.postimg.cc/0QNxYz4V/social.png", None, None  # Image par défaut si aucune n'est trouvée
@@ -93,21 +88,22 @@ def show_statistics_and_eda():
         st.write("Colonne 'Streams' non trouvée dans le dataset.")
 
     # Visualisation avec matplotlib
-    if 'matplotlib' in globals():
-        fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-        
-        # Types d'albums
-        if 'Album_Type' in music.columns:
-            album_types.plot(kind='bar', ax=ax[0], color='skyblue')
-            ax[0].set_title('Répartition des Types d\'Albums')
-            ax[0].set_ylabel('Nombre de Titres')
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+    
+    # Types d'albums
+    if 'Album_Type' in music.columns:
+        album_types = music['Album_Type'].value_counts()
+        album_types.plot(kind='bar', ax=ax[0], color='skyblue')
+        ax[0].set_title('Répartition des Types d\'Albums')
+        ax[0].set_ylabel('Nombre de Titres')
 
-        # Artistes les plus présents
-        top_artists.plot(kind='bar', ax=ax[1], color='lightgreen')
-        ax[1].set_title('Artistes les Plus Présents')
-        ax[1].set_ylabel('Nombre de Titres')
+    # Artistes les plus présents
+    top_artists = music['Artist'].value_counts().head(10)
+    top_artists.plot(kind='bar', ax=ax[1], color='lightgreen')
+    ax[1].set_title('Artistes les Plus Présents')
+    ax[1].set_ylabel('Nombre de Titres')
 
-        st.pyplot(fig)
+    st.pyplot(fig)
 
 # Fonction principale pour l'application Streamlit
 def main():
