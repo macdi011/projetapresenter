@@ -79,7 +79,7 @@ def show_statistics_and_eda():
     if 'Album_type' in music.columns:
         album_type_count = music['Album_type'].value_counts().reset_index()
         album_type_count.columns = ['Album_type', 'Count']
-        chart = alt.Chart(album_type_count).mark_pie(radius=150).encode(
+        chart = alt.Chart(album_type_count).mark_arc().encode(
             theta=alt.Theta(field='Count', type='quantitative'),
             color=alt.Color(field='Album_type', type='nominal'),
             tooltip=['Album_type', 'Count']
