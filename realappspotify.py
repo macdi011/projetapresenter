@@ -2,9 +2,8 @@ import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
-import matplotlib.pyplot as plt
 import altair as alt
-from io import BytesIO
+from io import StringIO
 
 # Clés d'API Spotify (remplacez-les par vos propres clés)
 CLIENT_ID = "70a9fb89662f4dac8d07321b259eaad7"
@@ -70,33 +69,39 @@ def show_statistics_and_eda():
 
     # Informations sur le DataFrame
     st.subheader('Informations sur le Dataset')
-    buffer = BytesIO()
+    buffer = StringIO()
     music.info(buf=buffer)
-    info_str = buffer.getvalue().decode()
+    info_str = buffer.getvalue()
     st.text(info_str)
 
     # Répartition des types d'albums
     st.subheader('Répartition des Types d\'Albums')
     if 'Album_type' in music.columns:
-        album_type_count = music['Album_type'].value_counts()
-        labels = album_type_count.index.tolist()
-        sizes = album_type_count.values.tolist()
-
-        # Création du graphique avec matplotlib
-        fig, ax = plt.subplots()
-        ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=180)
-        ax.set_title('Types d\'Albums')
-        plt.legend(labels, loc='best')
-
-        # Affichage du graphique dans Streamlit
-        st.pyplot(fig)
+        album_type_count = music['Album_type'].value_counts().reset_index()
+        album_type_count.columns = ['Album_type', 'Count']
+        chart = alt.Chart(album_type_count).mark_pie(radius=150).encode(
+            theta=alt.Theta(field='Count', type='quantitative'),
+            color=alt.Color(field='Album_type', type='nominal'),
+            tooltip=['Album_type', 'Count']
+        ).properties(
+            title='Répartition des Types d\'Albums'
+        )
+        st.altair_chart(chart, use_container_width=True)
     else:
         st.write("Colonne 'Album_type' non trouvée dans le dataset.")
 
     # Artistes les plus présents
     st.subheader('Artistes les Plus Présents')
-    top_artists = music['Artist'].value_counts().head(10)
-    st.bar_chart(top_artists)
+    top_artists = music['Artist'].value_counts().head(10).reset_index()
+    top_artists.columns = ['Artist', 'Count']
+    chart = alt.Chart(top_artists).mark_bar().encode(
+        x=alt.X('Count:Q', title='Nombre de Chansons'),
+        y=alt.Y('Artist:N', sort='-x', title='Artiste'),
+        color=alt.Color('Count:Q', legend=None)
+    ).properties(
+        title='Top 10 Artistes les Plus Présents'
+    )
+    st.altair_chart(chart, use_container_width=True)
 
     # Chansons les plus streamées
     st.subheader('Chansons les Plus Streamées')
